@@ -8,7 +8,7 @@ CONTENTS:<br>
 06 Going further<br>
 
 
-01 TLDR:
+<br>01 TLDR:<br>
 * Ultimate goal is to extract audio and midi data from the Digitech Trio Plus pedal's SD card for further use in your preferred DAW.
 
 see: http://digitech.com/en/products/trio-plus
@@ -17,18 +17,18 @@ see: http://digitech.com/en/products/trio-plus
 * Tested on Windows, Linux
 
 
-02 Project Status:
+<br>02 Project Status:<br>
 ALPHA
 
-03 Working:
+<br>03 Working:<br>
 Extract audio from *.tlsd file if no overdub loops have been recorded
 
-04 Not working:
+<br>04 Not working:<br>
 Not correctly extracting audio in case there are overdub loops (possibly audio chunk alignment issue)
 Not separating the different part sections of the song (only one wave file as output)
 Any MIDI data support is missing at the moment
 
-05 Getting started:
+<br>05 Getting started:<br>
 download and install the latest Python version for your computer from
 https://www.python.org/downloads/
 
@@ -43,8 +43,8 @@ Fire up the script! -> LINUX users remember: you might need to change the endlin
 
 The subfolder 'Trio_wav_export' will be created and the audio contents of the songs will be written herein
 
-06 Going further
-Need help to further reverse-engineering the data
+<br>06 Going further<br>
+NEED YOUR HELP to further reverse-engineering the data.<br>
 Look at my 'findings.txt' for what I found out so far
 
 Let's have fun!
