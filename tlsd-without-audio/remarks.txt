@@ -1,0 +1,11 @@
+Rock
+Pattern 1
+Simple Bass (Root on 1)
+
+BD = 1, 2+
+SD = 2, 4
+HH = straight 8's
+
+this is for all these tlsd's
+
+target tempo was 70; differs slightly
