@@ -1,0 +1,21 @@
+Findings, guesses, assumptions:
+
+Findings:
+Trio is said to be working at 24 bit @ 44.100 Hz - however I found the recorded mono audio signals to be 32 bit @ 22.050 Hz.
+I have loaded the whole .tsld file into audacity (http://www.audacityteam.org/) and tried various combinations until the audio signal sounded fine.
+
+All audio starts at 170800 bytes. I did not found any other (i.e. MIDI) data from that point on.
+
+Audio comes interleaved with constant 32k chunks (32768 bytes) of null bytes.
+
+Guesses:
+All data from 0...170799 might be MIDI in some form.
+
+Assumptions:
+Digitech did not re-invent the wheel! They will rely on some form of MIDI representation for the bass and drums.
+However it might be possible that all bass and drum parts are called from an device-internal list of some sorts of presets.
+If that was the case, we would be unlucky in trying to get MIDI out of the file.
+Besides MIDI, there has to be other things stored like the type of bass and drums (i.e. drumkit / type of bass) and song structure.
+There is a lot to be found out!
+
+
