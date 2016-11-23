@@ -1,11 +1,11 @@
 # Trio-Plus-Data
-CONTENTS:
-01 TLDR
-02 Project Status
-03 Working
-04 Not working
-05 Getting started
-06 Going further
+CONTENTS:<br>
+01 TLDR<br>
+02 Project Status<br>
+03 Working<br>
+04 Not working<br>
+05 Getting started<br>
+06 Going further<br>
 
 
 01 TLDR:
