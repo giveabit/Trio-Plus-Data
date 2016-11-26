@@ -1,5 +1,5 @@
 # Trio-Plus-Data
-current version: 0.51
+current version: 0.60 of 2016-11-26
 
 CONTENTS:<br>
 01 TLDR<br>
@@ -24,10 +24,11 @@ ALPHA
 
 <br>03 Working:<br>
 Extract audio from *.tlsd file if no overdub loops have been recorded<br>
-NOW (v 0.51) also separating the different part sections of the song (multiple wave files as output)
+(v 0.51) also separating the different part sections of the song (multiple wave files as output)<br>
+NEW -(v 0.60) also extracting different part sections when these include overdubs; although the overdubbed parts are still buggy
 
 <br>04 Not working:<br>
-Not correctly extracting audio in case there are overdub loops (possibly audio chunk alignment issue)<br>
+overdub loops are exported but are buggy (possibly audio chunk alignment issue)<br>
 Any MIDI data support is missing at the moment
 
 <br>05 Getting started:<br>
