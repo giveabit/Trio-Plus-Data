@@ -23,7 +23,7 @@ see: http://digitech.com/en/products/trio-plus
 ALPHA
 
 <br>03 Working:<br>
-Extract audio from *.tlsd file if no overdub loops have been recorded<br>
+(v 0.50) extract audio from *.tlsd file if no overdub loops have been recorded<br>
 (v 0.51) also separating the different part sections of the song (multiple wave files as output)<br>
 (v 0.60) also extracting different part sections when these include overdubs; although the overdubbed parts are still buggy<br>
 (v 0.61) mostly bugfixes, overall code improvements, enhanced detection for overdubbed recordings<br>
