@@ -28,7 +28,7 @@ Extract audio from *.tlsd file if no overdub loops have been recorded<br>
 (v 0.60) also extracting different part sections when these include overdubs; although the overdubbed parts are still buggy<br>
 (v 0.61) mostly bugfixes, overall code improvements, enhanced detection for overdubbed recordings<br>
 (v 0.62)</b> even more bugfixes<br>
-<br><b>NEW - (v 0.63)</b>performance greatly improved to lightning speed (!), nicer text output, ASCII art intro<br>
+<br><b>NEW - (v 0.63)</b> performance greatly improved to lightning speed (!), nicer text output, ASCII art intro<br>
 
 <br>04 Not working:<br>
 overdub loops are exported but are buggy (possibly audio chunk alignment issue)<br>
