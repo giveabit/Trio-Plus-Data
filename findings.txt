@@ -4,20 +4,26 @@ Findings:
 Trio is said to be working at 24 bit @ 44.100 Hz - however I found the recorded mono audio signals to be 16 bit @ 44.100 Hz.
 I have loaded the whole .tsld file into audacity (http://www.audacityteam.org/) and tried various combinations until the audio signal sounded fine.
 
-Audio starts at 170800 bytes if first recorded part is no overdub.
-Audio will start earlier if there were overdubs in first recorded part of the song.
-I did not found any other (i.e. MIDI) data from that point on.
+Trio+ works strictly on a 32 k (32768 bytes) chunks basis. 
+Audio is recorded in these chunks, starting at 170800 bytes offset from file start.
+In case no overdubs are made, audio comes interleaved with constant 32k chunks of null bytes.
+These null byte chunks are overwritten with the overdub plus the material from the initial audio chunks.
+Audio then starts at 138032 bytes offset from file start, lasts for 32 k then comes 32 k audio of the initial recording followed by 32 k from the overdub and so on.
+
+So everything from 138032 bytes on is audio in some interleaved format. There seems to be no 'padding' between the parts of the song. Thus, information on the beginning of each new part needs to be stored in the 'header' of the trio-file, where 'header' is everything from 0...138031 bytes.
+
+I figured that at least _some_ part information is stored in chunks of constant 10752 bytes starting at the address:
+
+part number - hex offset - dec offset
+01 - 14930 - 84272
+02 - 17330 - 95024
+03 - 00019d30 - 105776
+04 - 0001c730 - 116528
+05 - 0001f130 - 127280
 
 
-Audio comes interleaved with constant 32k chunks (32768 bytes) of null bytes.
-If there were overdubs, no null bytes are present!
-
-Guesses:
-All data from 0...<start of audio> might be MIDI in some form.
 
 Assumptions:
-If overdubs were recorded, these are also chunked in 32 k's and interleaved with the original recording.
-
 Digitech did not re-invent the wheel! They will rely on some form of MIDI representation for the bass and drums.
 However it might be possible that all bass and drum parts are called from an device-internal list of some sorts of presets.
 If that was the case, we would be unlucky in trying to get MIDI out of the file.
