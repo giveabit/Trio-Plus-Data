@@ -1,5 +1,5 @@
 # Trio-Plus-Data
-<b>current version: 0.63 </b>as of 2016-11-29<br>
+<b>current version: 0.65 </b>as of 2016-12-01<br>
 
 CONTENTS:<br>
 01 TLDR<br>
@@ -28,7 +28,8 @@ ALPHA
 (v 0.60) also extracting different part sections when these include overdubs; although the overdubbed parts are still buggy<br>
 (v 0.61) mostly bugfixes, overall code improvements, enhanced detection for overdubbed recordings<br>
 (v 0.62)</b> even more bugfixes<br>
-<b>NEW - (v 0.63)</b> performance greatly improved to lightning speed (!), nicer text output, ASCII art intro<br>
+(v 0.63) performance greatly improved to lightning speed (!), nicer text output, ASCII art intro<br>
+<b>NEW, recommended - (v 0.65)</b> complete re-write of key routines. Will be working better with overdub-parts in the future. Little buggy with the audio part endings (which were smooth in older version 0.63) - to be corrected. Is cleaning up leftovers better if something goes wrong.<br>
 
 <br>04 Not working:<br>
 overdub loops are exported but are buggy (possibly audio chunk alignment issue)<br>
