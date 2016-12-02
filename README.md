@@ -30,7 +30,7 @@ ALPHA
 (v 0.62) even more bugfixes<br>
 (v 0.63) performance greatly improved to lightning speed (!), nicer text output, ASCII art intro<br>
 (v 0.65) complete re-write of key routines. Will be working better with overdub-parts in the future. Little buggy with the audio part endings (which were smooth in older version 0.63) - to be corrected. Is cleaning up leftovers better if something goes wrong. Fixed logical bug with zero block detection (still key issue). Extracts header files in debug mode. Contents of debug files changed.<br>
-<b>NEW, recommended - (v 0.66)</b> bug-fixed aloppy endings.<br>
+<b>NEW, recommended - (v 0.66)</b> bug-fixed sloppy endings.<br>
 
 <br>04 Not working:<br>
 overdub loops are exported but are buggy (possibly audio chunk alignment issue)<br>
