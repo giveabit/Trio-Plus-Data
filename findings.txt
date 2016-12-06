@@ -10,17 +10,30 @@ In case no overdubs are made, audio comes interleaved with constant 32k chunks o
 These null byte chunks are overwritten with the overdub plus the material from the initial audio chunks.
 Audio then starts at 138032 bytes offset from file start, lasts for 32 k then comes 32 k audio of the initial recording followed by 32 k from the overdub and so on.
 
-So everything from 138032 bytes on is audio in some interleaved format. There is a chance that there is a padding of 13825 x nullbytes between two chunks of overdubbed parts - yet to be confirmed.
+So everything from 138032 bytes on is audio in some interleaved format.
 
-I figured that at least _some_ part information is stored within the header (0...138031 bytes offset) in chunks of constant 10752 bytes starting at the address:
+The header (0...138031 bytes offset) contains information on audio parts start implicitly:
+- coded in dwords within offset 1300...1319 (decimal)
+- first dword value+138032 = latest end of part 01 and earliest start of part 02
+- second dword value + first dword value+138032 = latest end of part 02 and earliest start of part 03
+- ...chain goes on until part 05 (5 dword values in total)
 
+Due to the interleaved nature of the file format, checks have to be performed on those boundaried determined by the dword values in 1300...1319.
+
+I have not been able to figure out the correct start vaules, lenghtes or ends for the parts from the header alone. Thus the code (as of version 0.67) performs the boundary checks and gives out ALL possible audio chunks - i.e.: in case of overdub detection the earlier starting and the later starting audio chunks are both written to separate files. I cannot discern only from the header, which part is the 'valid one', at the moment.
+
+Further part information is stored in chunks of constant 10752 bytes starting at the address:
 part number - hex offset - dec offset
 01 - 14930 - 84272
 02 - 17330 - 95024
 03 - 00019d30 - 105776
 04 - 0001c730 - 116528
 05 - 0001f130 - 127280
+FF FF FF FF values seem to mean: This part does not exist / is not recorded. Plus some other bits. To be figured out...
 
+And there's still more I found out - but unfortunately not useful at the moment. Will add that later.
+
+Ah, and no: standard midi information is NOT within the header (in terms of messages according to the midi specs).
 
 
 Assumptions:
@@ -29,6 +42,6 @@ However it might be possible that all bass and drum parts are called from an dev
 If that was the case, we would be unlucky in trying to get MIDI out of the file.
 Besides MIDI, there has to be other things stored like the type of bass and drums (i.e. drumkit / type of bass) and song structure.
 
-There is a lot to be found out!
+There is STILL a lot to be found out!
 
 
