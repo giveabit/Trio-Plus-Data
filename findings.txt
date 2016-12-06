@@ -18,9 +18,13 @@ The header (0...138031 bytes offset) contains information on audio parts start i
 - second dword value + first dword value+138032 = latest end of part 02 and earliest start of part 03
 - ...chain goes on until part 05 (5 dword values in total)
 
-Due to the interleaved nature of the file format, checks have to be performed on those boundaried determined by the dword values in 1300...1319.
+Due to the interleaved nature of the file format, checks have to be performed on those boundaried determined
+by the dword values in 1300...1319.
 
-I have not been able to figure out the correct start vaules, lenghtes or ends for the parts from the header alone. Thus the code (as of version 0.67) performs the boundary checks and gives out ALL possible audio chunks - i.e.: in case of overdub detection the earlier starting and the later starting audio chunks are both written to separate files. I cannot discern only from the header, which part is the 'valid one', at the moment.
+I have not been able to figure out the correct start vaules, lenghtes or ends for the parts from the header alone.
+Thus the code (as of version 0.67) performs the boundary checks and gives out ALL possible audio chunks - i.e.:
+in case of overdub detection the earlier starting and the later starting audio chunks are both written
+to separate files. I cannot discern only from the header, which part is the 'valid one', at the moment.
 
 Further part information is stored in chunks of constant 10752 bytes starting at the address:
 part number - hex offset - dec offset
