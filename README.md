@@ -1,5 +1,5 @@
 # Trio-Plus-Data
-<b>current version: 0.66 </b>as of 2016-12-02<br>
+<b>current version: 0.67 </b>as of 2016-12-06<br>
 
 CONTENTS:<br>
 01 TLDR<br>
@@ -20,7 +20,7 @@ see: http://digitech.com/en/products/trio-plus
 
 
 <br>02 Project Status:<br>
-ALPHA
+Beta - as of version 0.67
 
 <br>03 Working:<br>
 (v 0.50) extract audio from *.tlsd file if no overdub loops have been recorded<br>
@@ -30,10 +30,11 @@ ALPHA
 (v 0.62) even more bugfixes<br>
 (v 0.63) performance greatly improved to lightning speed (!), nicer text output, ASCII art intro<br>
 (v 0.65) complete re-write of key routines. Will be working better with overdub-parts in the future. Little buggy with the audio part endings (which were smooth in older version 0.63) - to be corrected. Is cleaning up leftovers better if something goes wrong. Fixed logical bug with zero block detection (still key issue). Extracts header files in debug mode. Contents of debug files changed.<br>
-<b>NEW, recommended - (v 0.66)</b> bug-fixed sloppy endings.<br>
+(v 0.66) bug-fixed sloppy endings.<br>
+<b>NEW, recommended - (v 0.67)</b> HUGE LEAP FORWARD - HEADER PARTLY DECRYPTED - information was used to re-write the code. Now correctly deals with single overdubs. Multiple overdubs seem to work in most cases.<br>
 
 <br>04 Not working:<br>
-overdub loops are exported but are buggy (possibly audio chunk alignment issue)<br>
+multiple overdub loops are yet to be confirmed working<br>
 Any MIDI data support is missing at the moment
 
 <br>05 Getting started:<br>
