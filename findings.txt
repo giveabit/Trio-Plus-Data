@@ -2,13 +2,15 @@ Findings, guesses, assumptions:
 
 Findings:
 Trio is said to be working at 24 bit @ 44.100 Hz - however I found the recorded mono audio signals to be 16 bit @ 44.100 Hz.
-I have loaded the whole .tsld file into audacity (http://www.audacityteam.org/) and tried various combinations until the audio signal sounded fine.
+I have loaded the whole .tsld file into audacity (http://www.audacityteam.org/) and tried various combinations until
+the audio signal sounded fine.
 
 Trio+ works strictly on a 32 k (32768 bytes) chunks basis. 
 Audio is recorded in these chunks, starting at 170800 bytes offset from file start.
 In case no overdubs are made, audio comes interleaved with constant 32k chunks of null bytes.
 These null byte chunks are overwritten with the overdub plus the material from the initial audio chunks.
-Audio then starts at 138032 bytes offset from file start, lasts for 32 k then comes 32 k audio of the initial recording followed by 32 k from the overdub and so on.
+Audio then starts at 138032 bytes offset from file start, lasts for 32 k then comes 32 k audio of the initial
+recording followed by 32 k from the overdub and so on.
 
 So everything from 138032 bytes on is audio in some interleaved format.
 
