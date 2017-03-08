@@ -2,6 +2,7 @@
 <b>current version: 0.67 </b>as of 2016-12-06<br>
 
 CONTENTS:<br>
+00 Status-miniblog<br>
 01 TLDR<br>
 02 Project Status<br>
 03 Working<br>
@@ -9,6 +10,11 @@ CONTENTS:<br>
 05 Getting started<br>
 06 Going further<br>
 
+<br>00 miniblog:<br>
+2017-03-08
+It's been silent a while but behind the scenes work is going on. Currently I got a request to implement some sort of song manipulation: copy, delete, move parts as well as uploading audio to a part. I had to do a major re-write and add a whole lot of code. At the moment, I am working on the 'copy' function. While programming progress is good I still do not know what the Trio+ will come up with when copying parts. I still have not decoded the bass/drum functions of the Trio+ so it might well be that audio copy from one part to another is possible but there might be no bass/drum in the newly copied part. We will see...
+Release estimate: 'when ready' (TM) - maybe end of march ?!
+Cheers!
 
 <br>01 TLDR:<br>
 * Ultimate goal is to extract audio and midi data from the Digitech Trio Plus pedal's SD card for further use in your preferred DAW.
