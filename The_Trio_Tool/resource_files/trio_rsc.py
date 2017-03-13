@@ -234,6 +234,8 @@ def init():
         else:
             if tlsd_dir:
                 fileList = glob(tlsd_dir+'/*' + trioFileExtension)
+            else:
+                fileList = glob('*' + trioFileExtension)
             if not fileList:
                 print('sorry: no .tlsd files found in current directory. EXIT')
                 input('<return>')
@@ -282,15 +284,16 @@ def read_ini():
         return 0
     return
 def fileDialog():
-    print()
     files = ''
     if tlsd_dir:
         files = glob(tlsd_dir+'/*' + trioFileExtension)
+    else:
+        files = glob('*' + trioFileExtension)
     if files:
         files.sort(key=lambda f: os.path.splitext(f)[1])
         for index, file in enumerate(files):
             print(index, '-', file)
-        first = input('\n\nPlease input file number for processing:')
+        first = input('\n\nPlease input file number for processing: ')
         try:
             first = int(first)
         except:
@@ -408,7 +411,7 @@ def getPartInfo(data, debugFile):
 
     # *************************
     if debug:
-        with open(debugFile,'a') as f:
+        with open(debugFile, 'a') as f:
             f.write('\nafter verify end\n')
             for part in parts:
                 f.write(str(part)+'\n')
@@ -669,53 +672,100 @@ def choose_operation(file_name, parts, data):
     # print(color.GREEN+'\nNOTE: This part of the program ist BETA and results may not be satisfying'+color.END)
     print('\nNOTE: This part of the program ist BETA and results may not be satisfying')
     file_name = os.path.basename(file_name)
-    outfile_name = editPrefix + file_name
+    if not file_name[:5] == editPrefix:
+        outfile_name = editPrefix + file_name
+    else:
+        outfile_name = file_name
     answer = ''
     while not answer == 'x':
         success = 0
-        answer = ask('[c]opy, [m]ove, [e]rase part or [u]pload audio? [x] will exit the tool ', '', ['c', 'm', 'e', 'u', 'x'], 5)
+        answer = ask('[c]opy, [m]ove, [e]rase part or [u]pload audio? [x] will exit the tool ',
+                     '', ['c', 'm', 'e', 'u', 'x'], 5)
         if answer == 'c':
-            success = copy_part(outfile_name, parts, data)
+            source, destination = tlsd_manipulation_user_input(parts, answer)
+            if source and destination:
+                success = copy_part(outfile_name, parts, data, source, destination)
+                input('copy done. <return>')
         elif answer == 'm':
             print('- NOT IMPLEMENTED YET -\n')
+            # source, destination = tlsd_manipulation_user_input(parts, answer)
+            # if source and destination:
+            #     parts = copy_part(outfile_name, parts, data, source, destination, answer)
+            #     input('copystep')
+            #     data = readBytes(outfile_name, 0)
+            #     success = erase_part(outfile_name, parts, data, source)
+            #     input('move done. <return>')
         elif answer == 'e':
-            print('- NOT IMPLEMENTED YET -\n')
+            source, destination = tlsd_manipulation_user_input(parts, answer)
+            if source:
+                success = erase_part(outfile_name, parts, data, source)
+                input('erase done. <return>')
         elif answer == 'u':
             print('- NOT IMPLEMENTED YET -\n')
         if success:
             return outfile_name
     return 0
-def copy_part(outfile_name, parts, data):
+
+def tlsd_manipulation_user_input(parts, mode):
     # lots of user input and checks
     valid_source_parts = give_parts_with_audio_only(parts)
     valid_destiantion_parts = give_not_trained_parts(parts)
     if not valid_source_parts:
-        print('\nsorry - no audio parts to copy!')
-        return
-    if not valid_destiantion_parts:
-        print('\nsorry - no non-trained (totally empty) parts as copy destination available!')
-        return
+        if mode == 'c':
+            print('\nsorry - no audio parts to copy!')
+        if mode == 'm':
+            print('\nsorry - no audio parts to move!')
+        if mode == 'e':
+            print('\nsorry - no audio parts to erase!')
+        return 0, 0
+    if not valid_destiantion_parts and mode in ['c', 'm']:
+        if mode == 'c':
+            print('\nsorry - no non-trained (totally empty) parts as copy destination available!')
+        if mode == 'm':
+            print('\nsorry - no non-trained (totally empty) parts as move destination available!')
+        return 0, 0
     valid_source_numbers = []
     for part in valid_source_parts:
         valid_source_numbers.append(part.get_part_number())
     presentParts(valid_source_parts)
-    source = ask('source: which part number shall be copied? ', '', valid_source_numbers, 6)
-    valid_destination_numbers = []
-    for part in valid_destiantion_parts:
-        valid_destination_numbers.append(part.get_part_number())
-    presentParts(valid_destiantion_parts)
-    destination = ask('destination: copy to which empty part number? ',\
-                '', valid_destination_numbers, 6)
+    if mode == 'c':
+        source = ask('source: which part number shall be copied? ', '', valid_source_numbers, 6)
+    if mode == 'm':
+        source = ask('source: which part number shall be moved? ', '', valid_source_numbers, 6)
+    if mode == 'e':
+        source = ask('source: which part number shall be erased? ', '', valid_source_numbers, 6)
+    if mode in ['c', 'm']:
+        valid_destination_numbers = []
+        for part in valid_destiantion_parts:
+            valid_destination_numbers.append(part.get_part_number())
+        presentParts(valid_destiantion_parts)
+        if mode == 'c':
+            destination = ask('destination: copy to which empty part number? ',\
+                        '', valid_destination_numbers, 6)
+        if mode == 'm':
+            destination = ask('destination: move to which empty part number? ',\
+                        '', valid_destination_numbers, 6)
+    if mode == 'e':
+        destination = 0
+
     # question = color.BOLD+color.RED+'\n>>>\tcopy from part: '+str(source)+' to part: '\
     #           +str(destination)+' ?\t<<<'+color.END
-    question = '\n>>>\tcopy from part: '+str(source)+' to part: '\
-               +str(destination)+' ?\t<<<'
-
+    if mode == 'c':
+        question = '\n>>>\tcopy from part: '+str(source)+' to part: '\
+                +str(destination)+' ?\t<<<'
+    if mode == 'm':
+        question = '\n>>>\tmove from part: '+str(source)+' to part: '\
+                +str(destination)+' ?\t<<<'
+    if mode == 'e':
+        question = '\n>>>\terase part: ' + str(source) + ' ?\t<<<'
     answer = ask(question, 'yes', '', 1)
     if not answer:
-        return 0
+        return 0, 0
+    else:
+        return source, destination
 
-    # ok let's do this!
+
+def copy_part(outfile_name, parts, data, source, destination, mode='c'):
     new_data = []
     new_file_lenght = offsetAudio
 
@@ -738,27 +788,10 @@ def copy_part(outfile_name, parts, data):
     for part in parts:
         current_part = part.get_part_number()
         write_address = dict_part_endings_dword[current_part]
-        previous_value = offsetAudio
         if current_part == destination:
-            if current_part == 1:
-                add_value = parts[source-1].get_reserved_bytelenght()
-                part.set_trained(previous_value+add_value)
-                insert_value = (previous_value+add_value).to_bytes(4, byteorder='little')
-            else:
-                for foo in range(0, current_part-2 +1):
-                    previous_value = parts[foo].get_trained() or previous_value
-                    # parts = 0...4 <-> current_part = 1...5; minus another for previuous;
-                    # plus one for range function
-                add_value = parts[source-1].get_reserved_bytelenght()  # see above
-                part.set_trained(previous_value+add_value)
-                insert_value = (previous_value+add_value).to_bytes(4, byteorder='little')
-            header[write_address:write_address+4] = insert_value
-        elif current_part > destination and part.get_trained():
-            for foo in range(0, current_part-2 +1):
-                previous_value = parts[foo].get_trained() or previous_value
-            add_value = part.get_reserved_bytelenght()
-            part.set_trained(previous_value+add_value)
-            insert_value = (previous_value+add_value).to_bytes(4, byteorder='little')
+            source_lenght = parts[source-1].get_reserved_bytelenght()
+            part.set_trained(source_lenght)
+            insert_value = (source_lenght).to_bytes(4, byteorder='little')
             header[write_address:write_address+4] = insert_value
 
     # CHANGE HEADER BYTES - PART INFOS
@@ -766,6 +799,73 @@ def copy_part(outfile_name, parts, data):
     end = start + 20 # 5 DWORD values
     insert_value = header[start:end]
     write_address = dict_part_infos[destination]
+    header[write_address:write_address+20] = insert_value
+
+    # ACCOUNT FOR NEW FILE LENGHT IN HEADER
+    # A) fixed values:
+    first = True
+    for write_address in fixed_value_eof_locations:
+        if first:
+            first = False
+            insert_value = new_file_lenght.to_bytes(4, 'little')
+            header[write_address:write_address + 4] = insert_value
+        else:
+            insert_value = (new_file_lenght - 1192).to_bytes(4, 'little')
+            header[write_address:write_address + 4] = insert_value
+
+    # B) part based values
+    previous_value = offsetAudio-1192
+    for part_number in dict_part_eof_dword:
+        write_address = dict_part_eof_dword[part_number]
+        if parts[part_number-1].get_trained():
+            add_value = parts[part_number-1].get_trained()
+            insert_value = (previous_value + add_value).to_bytes(4, 'little')
+            header[write_address:write_address+4] = insert_value
+            previous_value += add_value
+        else:
+            insert_value = (previous_value).to_bytes(4, 'little')
+            header[write_address:write_address+4] = insert_value
+
+    # INSERT HEADER AS FIRST ELEMENT
+    header = bytes(header)
+    new_data.insert(0, header)
+
+    # WRITE TO DISK / ERASE IF EXISTS
+    if os.path.isfile(outfile_name):
+        os.remove(outfile_name)
+    for item in new_data:
+        outFile(outfile_name, item)
+    if mode == 'm':
+        return parts
+    else:
+        return 1
+def erase_part(outfile_name, parts, data, source):
+    new_data = []
+    new_file_lenght = offsetAudio
+
+    # AUDIO AREA - INCLUDE RESERVED PARTS
+    # ('trained' also means area is reserved on disk like if audio was actually recorded)
+    for part in parts:
+        current_part = part.get_part_number()
+        if part.get_trained() and not current_part == source:
+            start, end = part.get_reserved_audio_space()
+            new_data.append(data[start:end])  # if no audio this should be zeroes
+            new_file_lenght += end - start
+
+    # CHANGE HEADER BYTES - TRAINED PARTS
+    header = bytearray(data[:offsetAudio])
+    for part in parts:
+        current_part = part.get_part_number()
+        write_address = dict_part_endings_dword[current_part]
+        if current_part == source:
+            insert_value = (0).to_bytes(4, byteorder='little')
+            header[write_address:write_address+4] = insert_value
+            part.set_trained(False)
+
+    # CHANGE HEADER BYTES - PART INFOS
+    start = dict_part_infos[source]
+    insert_value = empty_part_bytes # 5 DWORD values
+    write_address = start
     header[write_address:write_address+20] = insert_value
 
 
@@ -798,15 +898,12 @@ def copy_part(outfile_name, parts, data):
     header = bytes(header)
     new_data.insert(0, header)
 
-
+    # WRITE TO DISK / ERASE IF EXISTS
+    if os.path.isfile(outfile_name):
+        os.remove(outfile_name)
     for item in new_data:
         outFile(outfile_name, item)
-    input('done. <return>')
     return 1
-def erase_part(parts, which, data):
-    pass
-def move_part(parts, source, destination, data):
-    pass
+
 def upload_audio(parts, file, data):
     pass
-
