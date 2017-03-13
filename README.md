@@ -14,7 +14,7 @@ CONTENTS:<br>
 <b>2017-03-13<br></b>
 New Release - bugfixes. I hate bugs ;-). We're still beta with the editing functions!
 Cheers!<br>
-2017-03-12<br>
+<br>2017-03-12<br>
 New Release - check it out.
 Cheers!<br><br>
 2017-03-08<br>
