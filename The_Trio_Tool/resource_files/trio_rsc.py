@@ -25,7 +25,7 @@ rsc = 'resource_files/'
 debugDir = 'Debug'
 tlsd_dir = ''
 dict_part_endings_dword = {1: 1300, 2: 1304, 3: 1308, 4: 1312, 5: 1316} # DWORD lenght
-dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116258, 5: 127280} # 5 DWORDs lenght
+dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116258, 5: 127280} # 5 DWORDs lenght / 20 bytes
 # [84272-84292]; [95024-95044]; [105776-105796]; [116258-116548]; [127280-127300]
 # python-style: including first but excluding last element!
 # first DWORD first byte 1 = part empty / 0 = part exists
@@ -34,9 +34,16 @@ dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116258, 5: 127280} # 5 DWOR
 # ??? not always - forth DWORD first byte 1 = no OD / 0 = OD
 # ??? not always - fifth DWORD first byte 1 = no OD / 0 = OD
 
-empty_part_bytes = b'\x01\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00'
+# dict_ext_part_infos ={1: 2240, 2: 18624, 3: 35008, 4: 51392, 5: 67776} # lenght: 16384 bytes
+# wrong values?! -> copy audio to part 4 fails!; bass/drum was still copied
 
-fixed_value_eof_locations = [544, 632, 1320]
+
+dict_ext_part_infos ={1: 2352, 2: 18736, 3: 35120, 4: 51504, 5: 67888} # lenght: 16384 bytes
+# above: test new values
+
+empty_part_bytes = b'\x01\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00' # 20 bytes
+
+fixed_value_eof_locations = [544, 632, 1320] # DWORD lenght
 # filesizes:
 # 544-548 eof
 
@@ -283,33 +290,52 @@ def read_ini():
         tlsd_dir = ''
         return 0
     return
-def fileDialog():
+def fileDialog(mode='trio'):
+    """
+    In MODE -trio- present and choose .tlsd files.
+    
+    In MODE -wav- present and choose .wav files.
+    
+    Success returns filename.
+    
+    Else returns 0.
+    In MODE -wav- return -1 if no .wav files are present.
+    """
     files = ''
-    if tlsd_dir:
-        files = glob(tlsd_dir+'/*' + trioFileExtension)
-    else:
-        files = glob('*' + trioFileExtension)
+    if mode == 'trio':
+        if tlsd_dir:
+            files = glob(tlsd_dir+'/*' + trioFileExtension)
+        else:
+            files = glob('*' + trioFileExtension)
+    if mode == 'wav':
+        files = glob('*.wav')
     if files:
         files.sort(key=lambda f: os.path.splitext(f)[1])
         for index, file in enumerate(files):
             print(index, '-', file)
-        first = input('\n\nPlease input file number for processing: ')
+        file_number = input('\n\nPlease input file number for processing: ')
         try:
-            first = int(first)
+            file_number = int(file_number)
         except:
             return 0
-        if not first < len(files):
+        if not file_number < len(files):
             return 0
-        return files[first]
-    print('There are no '+trioFileExtension+' files in this folder')
-    input('<ok> - EXIT')
-    sys.exit(-999)
+        return files[file_number]
+    if mode == 'trio':
+        print('There are no '+trioFileExtension+' files in this folder')
+        input('<ok> - EXIT')
+        sys.exit(-999)
+    if mode == 'wav':
+        print('There are no .wav files in this folder')
+        input('<ok>')
+        return -1
+
 def readBytes(fileName, offset):
     with open(fileName, 'rb') as f:
         f.seek(offset)
         buffer = f.read()
     return buffer
-def getPartInfo(data, debugFile):
+def getPartInfo(data, debugFile=''):
     Part.reset_counter()
     parts = [Part() for i in range(5)]  # create a list of 5 Part instances from 0...4
     offsetsTemp = []
@@ -328,7 +354,7 @@ def getPartInfo(data, debugFile):
         return parts
 
     # *************************
-    # if debug:
+    # if debug and debugFile:
     #     with open(debugFile, 'a') as f:
     #         f.write('after raw part info\n')
     #         for part in parts:
@@ -359,7 +385,7 @@ def getPartInfo(data, debugFile):
             previous = end
 
     # *************************
-    # if debug:
+    # if debug  and debugFile:
     #     with open(debugFile, 'a') as f:
     #         f.write('\nafter search start positions\n')
     #         for part in parts:
@@ -387,7 +413,7 @@ def getPartInfo(data, debugFile):
         return parts
 
     # *************************
-    # if debug:
+    # if debug and debugFile:
     #     with open(debugFile,'a') as f:
     #         f.write('\nafter verify start\n')
     #         for part in parts:
@@ -410,7 +436,7 @@ def getPartInfo(data, debugFile):
             part.set_overdub(start, end)
 
     # *************************
-    if debug:
+    if debug and debugFile:
         with open(debugFile, 'a') as f:
             f.write('\nafter verify end\n')
             for part in parts:
@@ -618,6 +644,8 @@ def formAudioParts(parts, data, debugFile):
 
 def writeHeader(sizeAudio):
     data = []
+    # byte number x...y
+    # 0...3
     data.append('RIFF'.encode())
     fileSize = sizeAudio+44-8 #file-fileSize (equals file-fileSize - 8); wav header = 44 bytes
     sampleRate = 44100
@@ -627,18 +655,29 @@ def writeHeader(sizeAudio):
     blockAlign = int(numberChannels*bitsPerSample/8)
     subChunk2Size = fileSize-44
 
+    # 4...7
     data.append(fileSize.to_bytes(4,'little'))
+    # 8...15
     data.append('WAVEfmt '.encode())
+    # 16...19
     data.append((16).to_bytes(4,'little')) #Subchunk1Size    16 for PCM
+    # 20...21
     data.append((1).to_bytes(2,'little')) #Type of format (1 is PCM)
+    # 22...23
     data.append(numberChannels.to_bytes(2,'little')) #Number of Channels
+    # 24...27
     data.append(sampleRate.to_bytes(4,'little')) #sample rate
+    # 28...31
     data.append(byteRate.to_bytes(4,'little'))# byteRate = sample Rate * BitsPerSample * Channels/ 8
+    # 32...33
     data.append(blockAlign.to_bytes(2,'little'))#BlockAlign= NumChannels * BitsPerSample/8
+    # 34...35
     data.append(bitsPerSample.to_bytes(2,'little')) # BitsPerSample
+    # 36...39
     data.append('data'.encode())
+    # 40...43
     data.append(subChunk2Size.to_bytes(4,'little'))#data-block fileSize (equals file-fileSize - 44)
-
+    # 44...end : audio data
     with open(headerFile, 'wb') as f:
         for item in data:
             f.write(item)
@@ -687,14 +726,13 @@ def choose_operation(file_name, parts, data):
                 success = copy_part(outfile_name, parts, data, source, destination)
                 input('copy done. <return>')
         elif answer == 'm':
-            print('- NOT IMPLEMENTED YET -\n')
-            # source, destination = tlsd_manipulation_user_input(parts, answer)
-            # if source and destination:
-            #     parts = copy_part(outfile_name, parts, data, source, destination, answer)
-            #     input('copystep')
-            #     data = readBytes(outfile_name, 0)
-            #     success = erase_part(outfile_name, parts, data, source)
-            #     input('move done. <return>')
+            source, destination = tlsd_manipulation_user_input(parts, answer)
+            if source and destination:
+                copy_part(outfile_name, parts, data, source, destination)
+                data = readBytes(outfile_name, 0)
+                parts = getPartInfo(data)
+                success = erase_part(outfile_name, parts, data, source)
+                input('move done. <return>')
         elif answer == 'e':
             source, destination = tlsd_manipulation_user_input(parts, answer)
             if source:
@@ -765,11 +803,11 @@ def tlsd_manipulation_user_input(parts, mode):
         return source, destination
 
 
-def copy_part(outfile_name, parts, data, source, destination, mode='c'):
+def copy_part(outfile_name, parts, data, source, destination):
     new_data = []
     new_file_lenght = offsetAudio
 
-    # AUDIO AREA - INCLUDE RESERVED PARTS
+    # 0 -- AUDIO AREA -- INCLUDE RESERVED PARTS
     # ('trained' also means area is reserved on disk like if audio was actually recorded)
     for part in parts:
         current_part = part.get_part_number()
@@ -783,7 +821,7 @@ def copy_part(outfile_name, parts, data, source, destination, mode='c'):
             new_data.append(data[start:end])  # if no audio this should be zeroes
             new_file_lenght += end - start
 
-    # CHANGE HEADER BYTES - TRAINED PARTS
+    # 1 -- CHANGE HEADER BYTES -- TRAINED PARTS
     header = bytearray(data[:offsetAudio])
     for part in parts:
         current_part = part.get_part_number()
@@ -794,14 +832,23 @@ def copy_part(outfile_name, parts, data, source, destination, mode='c'):
             insert_value = (source_lenght).to_bytes(4, byteorder='little')
             header[write_address:write_address+4] = insert_value
 
-    # CHANGE HEADER BYTES - PART INFOS
+    # 2 -- CHANGE HEADER BYTES -- PART INFOS
     start = dict_part_infos[source]
-    end = start + 20 # 5 DWORD values
+    lenght = 20 # bytes / 5 DWORD values
+    end = start + lenght
     insert_value = header[start:end]
     write_address = dict_part_infos[destination]
-    header[write_address:write_address+20] = insert_value
+    header[write_address:write_address+lenght] = insert_value
 
-    # ACCOUNT FOR NEW FILE LENGHT IN HEADER
+    # 3 -- CHANGE HEADER BYTES -- EXTENDED PART INFOS
+    start = dict_ext_part_infos[source]
+    lenght = 16384 # bytes
+    end = start + lenght
+    insert_value = header[start:end]
+    write_address = dict_ext_part_infos[destination]
+    header[write_address:write_address+lenght] = insert_value
+
+    # 4 -- ACCOUNT FOR NEW FILE LENGHT IN HEADER --
     # A) fixed values:
     first = True
     for write_address in fixed_value_eof_locations:
@@ -826,17 +873,15 @@ def copy_part(outfile_name, parts, data, source, destination, mode='c'):
             insert_value = (previous_value).to_bytes(4, 'little')
             header[write_address:write_address+4] = insert_value
 
-    # INSERT HEADER AS FIRST ELEMENT
+    # 5 -- INSERT HEADER AS FIRST ELEMENT --
     header = bytes(header)
     new_data.insert(0, header)
 
-    # WRITE TO DISK / ERASE IF EXISTS
+    # 6 -- WRITE TO DISK / ERASE IF EXISTS --
     if os.path.isfile(outfile_name):
         os.remove(outfile_name)
     for item in new_data:
         outFile(outfile_name, item)
-    if mode == 'm':
-        return parts
     else:
         return 1
 def erase_part(outfile_name, parts, data, source):
@@ -864,10 +909,21 @@ def erase_part(outfile_name, parts, data, source):
 
     # CHANGE HEADER BYTES - PART INFOS
     start = dict_part_infos[source]
-    insert_value = empty_part_bytes # 5 DWORD values
+    lenght = 20 # bytes / 5 DWORD
+    insert_value = empty_part_bytes
     write_address = start
-    header[write_address:write_address+20] = insert_value
+    header[write_address:write_address+lenght] = insert_value
 
+    # CHANGE HEADER BYTES - EXTENDED PART INFOS
+    # >>> TO DO: check if needed to write 'empty'
+    # to theses parts
+    # in case: set up 'empty' bytes for write
+
+    # start = dict_ext_part_infos[source]
+    # lenght = ...
+    # insert_value = empty_EXTENDED_part_bytes
+    # write_address = start
+    # header[write_address:write_address+lenght] = insert_value
 
     # ACCOUNT FOR NEW FILE LENGHT IN HEADER
     # A) fixed values:
@@ -904,6 +960,14 @@ def erase_part(outfile_name, parts, data, source):
     for item in new_data:
         outFile(outfile_name, item)
     return 1
+
+def chunker(sequence, size):
+    """Return the given SEQUENCE as a list of
+    chunks with the defined SIZE.
+
+    The last chunk may be smaller than SIZE.
+    """
+    return [sequence[pos:pos + size] for pos in range(0, len(sequence), size)]
 
 def upload_audio(parts, file, data):
     pass
