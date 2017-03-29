@@ -14,7 +14,7 @@ CONTENTS:<br>
 
 <br>00 miniblog:<br>
 <b>2017-03-29</b><br>
-New release (0.72, recommended). Copy does work except copy to part 4, which is strange. Hummm. Nevertheless - check it out.<br>
+New release (0.72, recommended). Copy parts implemented. Erase/move not tested yet; should work ok.<br>
 Update to the 'Trio+ Addresses.xlsx' file (knowledgebase of all known addresses)<br>
 Cheers!<br><br>
 2017-03-13<br>
@@ -41,10 +41,10 @@ see: http://digitech.com/en/products/trio-plus
 Beta - as of version 0.67
 
 <br>03 Working:<br>
-extract audio; copy parts (buggy); erase parts (dirty, needs cleaning)<br>
+extract audio; copy parts; move/erase parts (dirty, needs cleaning)<br>
 
 <br>04 Not working:<br>
-copy to part 4; upload audio to part; move part not confirmed to be working correctly<br>
+upload audio to part; erase/move parts not yet confirmed to be working correctly<br>
 Any MIDI data support is missing at the moment
 
 <br>05 Getting started:<br>
