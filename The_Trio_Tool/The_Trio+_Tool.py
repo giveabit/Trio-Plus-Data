@@ -19,6 +19,18 @@ def debug_basic_tasks(data, fileName):
 def main():
     intro()
     fileList, debug, mode = init()
+    if mode == 'p': # hidden mode p presents parts only
+        while True:
+            fileName = fileList[0]
+            debugFile = None
+            data = readBytes(fileName, 0)
+            parts = getPartInfo(data, debugFile)
+            print(fileName)
+            presentParts(parts)
+            answer = ask('quit? ', 'no')
+            if answer:
+                sys.exit(0)
+            fileList, debug, mode = init(True)
     if mode == 'm':
         print('\nLegend:')
         print('trained\t= chord progression trained but no audio recorded')
