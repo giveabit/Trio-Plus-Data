@@ -25,8 +25,8 @@ rsc = 'resource_files/'
 debugDir = 'Debug'
 tlsd_dir = ''
 dict_part_endings_dword = {1: 1300, 2: 1304, 3: 1308, 4: 1312, 5: 1316} # DWORD lenght
-dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116258, 5: 127280} # 5 DWORDs lenght / 20 bytes
-# [84272-84292]; [95024-95044]; [105776-105796]; [116258-116548]; [127280-127300]
+dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116528, 5: 127280} # 5 DWORDs lenght / 20 bytes
+# [84272-84292]; [95024-95044]; [105776-105796]; [116528-116548]; [127280-127300]
 # python-style: including first but excluding last element!
 # first DWORD first byte 1 = part empty / 0 = part exists
 # second DWORD = some value... 'trained'
@@ -34,12 +34,10 @@ dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116258, 5: 127280} # 5 DWOR
 # ??? not always - forth DWORD first byte 1 = no OD / 0 = OD
 # ??? not always - fifth DWORD first byte 1 = no OD / 0 = OD
 
-# dict_ext_part_infos ={1: 2240, 2: 18624, 3: 35008, 4: 51392, 5: 67776} # lenght: 16384 bytes
-# wrong values?! -> copy audio to part 4 fails!; bass/drum was still copied
-
 
 dict_ext_part_infos ={1: 2352, 2: 18736, 3: 35120, 4: 51504, 5: 67888} # lenght: 16384 bytes
-# above: test new values
+
+empty_ext_part_bytes = b'\x03\x02' + b'\x00' * 16254 + b'\x02' + b'\x00' * 127 # lenght: 16384 bytes
 
 empty_part_bytes = b'\x01\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00' # 20 bytes
 
@@ -915,15 +913,12 @@ def erase_part(outfile_name, parts, data, source):
     header[write_address:write_address+lenght] = insert_value
 
     # CHANGE HEADER BYTES - EXTENDED PART INFOS
-    # >>> TO DO: check if needed to write 'empty'
-    # to theses parts
-    # in case: set up 'empty' bytes for write
 
-    # start = dict_ext_part_infos[source]
-    # lenght = ...
-    # insert_value = empty_EXTENDED_part_bytes
-    # write_address = start
-    # header[write_address:write_address+lenght] = insert_value
+    start = dict_ext_part_infos[source]
+    lenght = 16384
+    insert_value = empty_ext_part_bytes
+    write_address = start
+    header[write_address:write_address+lenght] = insert_value
 
     # ACCOUNT FOR NEW FILE LENGHT IN HEADER
     # A) fixed values:
