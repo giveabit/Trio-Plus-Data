@@ -36,17 +36,17 @@ see: http://digitech.com/en/products/trio-plus
 
 
 <br>02 Project Status:<br>
-Beta - as of version 0.67
+good to work with; alway get latest release!
 
 <br>03 Working:<br>
-extract audio; copy parts; move/erase parts (dirty, needs cleaning)<br>
+extract audio; copy, move and erase parts.<br>
 
 <br>04 Not working:<br>
-upload audio to part; erase/move parts not yet confirmed to be working correctly<br>
+upload audio to part;<br>
 Any MIDI data support is missing at the moment
 
 <br>05 Getting started:<br>
-download and install the latest Python version for your computer from
+download and install the latest Python version (3.x) for your computer from
 https://www.python.org/downloads/
 
 Record some stuff with the Trio Plus
