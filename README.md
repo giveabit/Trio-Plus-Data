@@ -1,5 +1,5 @@
 # Trio-Plus-Data
-current version: release 0.72 as of 2017-03-29<br>
+current version: release 0.73 as of 2017-04-04<br>
 <i> current development under 'Trio+Tool' branch</i><br>
 <i> updating the Trio+ hardware with 'TrioUpdaterInstaller_v2.0.2.exe' from Digitech website might be necessary</i>
 
@@ -13,6 +13,9 @@ CONTENTS:<br>
 06 Going further<br>
 
 <br>00 miniblog:<br>
+<b>2017-05-24</b><br>
+Working on the 'upload audio' to a song functionality. Have not worked out how to determine which part of the interleaved audio that has been recorded is the one actually being in use currently. As a last resort, one could ask the user to decide but I am still hoping to figure that out. Maybe I will be pushing some code in the next weeks. Had to attend to other issues the last weeks.<br>
+Cheers!<br><br>
 <b>2017-03-29</b><br>
 New release (0.72, recommended). Copy parts implemented. Erase/move not tested yet; should work ok.<br>
 Update to the 'Trio+ Addresses.xlsx' file (knowledgebase of all known addresses)<br>
@@ -22,10 +25,6 @@ New release - bugfixes. I hate bugs ;-). We're still beta with the editing funct
 Cheers!<br>
 <br>2017-03-12<br>
 New Release - check it out.
-Cheers!<br><br>
-2017-03-08<br>
-It's been silent a while but behind the scenes work is going on. Currently I got a request to implement some sort of song manipulation: copy, delete, move parts as well as uploading audio to a part. I had to do a major re-write and add a whole lot of code. At the moment, I am working on the 'copy' function. While programming progress is good I still do not know what the Trio+ will come up with when copying parts. I still have not decoded the bass/drum functions of the Trio+ so it might well be that audio copy from one part to another is possible but there might be no bass/drum in the newly copied part. We will see...
-Release estimate: 'when ready' (TM) - maybe end of march ?!
 Cheers!
 
 <br>01 TLDR:<br>
