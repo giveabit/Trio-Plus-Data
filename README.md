@@ -36,7 +36,7 @@ see: http://digitech.com/en/products/trio-plus
 
 
 <br>02 Project Status:<br>
-good to work with; alway get latest release!
+good to work with; always get latest release!
 
 <br>03 Working:<br>
 extract audio; copy, move and erase parts.<br>
