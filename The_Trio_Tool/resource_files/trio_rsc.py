@@ -22,11 +22,14 @@ editPrefix = 'EDIT_'
 wavDir = 'Trio_wav_export'
 headerFile = wavDir+'/header.bin'
 rsc = 'resource_files/'
+rsc_file = rsc+'program_defaults.ini'
+rsc_empty_song = rsc+'template_empty_song.tlsd'
 debugDir = 'Debug'
 tlsd_dir = ''
 dict_part_endings_dword = {1: 1300, 2: 1304, 3: 1308, 4: 1312, 5: 1316} # DWORD lenght
 dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116528, 5: 127280} # 5 DWORDs lenght / 20 bytes
-# [84272-84292]; [95024-95044]; [105776-105796]; [116528-116548]; [127280-127300]
+# seems sufficient to take these 20 bytes - MAYBE MORE NECESSARY???
+# [84272-84292]; [95024-95044]; [105776-105796]; [116258-116548]; [127280-127300]
 # python-style: including first but excluding last element!
 # first DWORD first byte 1 = part empty / 0 = part exists
 # second DWORD = some value... 'trained'
@@ -34,10 +37,7 @@ dict_part_infos = {1: 84272, 2: 95024, 3: 105776, 4: 116528, 5: 127280} # 5 DWOR
 # ??? not always - forth DWORD first byte 1 = no OD / 0 = OD
 # ??? not always - fifth DWORD first byte 1 = no OD / 0 = OD
 
-
 dict_ext_part_infos ={1: 2352, 2: 18736, 3: 35120, 4: 51504, 5: 67888} # lenght: 16384 bytes
-
-empty_ext_part_bytes = b'\x03\x02' + b'\x00' * 16254 + b'\x02' + b'\x00' * 127 # lenght: 16384 bytes
 
 empty_part_bytes = b'\x01\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00' # 20 bytes
 
@@ -56,7 +56,7 @@ dict_part_eof_dword = {1: 1248, 2: 1256, 3: 1264, 4: 1272} # DWORD lenght; EOF-1
 # 1264-1268 cont. or pt. 3
 # 1272-1276 cont. or pt. 4
 
-
+# ~~~~~~~~~~~~~~~~~ GENERAL FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~
 class color:
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
@@ -68,6 +68,22 @@ class color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
+
+class PartCopyContainer(object):
+    """
+    container to temporarily take data of exisiting parts of other files
+    target_part_number initialised with 0 -> idientifier to throw away later
+    vaild numbers shall be 1...5
+    """
+
+    def __init__(self, target_part_number = 0, audio_area_data = '', part_info = '', ext_part_info = '',
+                    source_file = '', source_part = 0):
+        self.target_part_number = target_part_number
+        self.audio_area_data = audio_area_data
+        self.part_info = part_info
+        self.ext_part_info = ext_part_info
+        self.source_file = source_file
+        self.source_part = source_part
 
 class Part(object):
     # all values are False or integer !!!
@@ -176,8 +192,9 @@ class Part(object):
         return bytelenght
 
 
-def intro():
+def intro(mode=''):
     print('-----------------------------------------------------------------------------')
+    print('|                                                 release-#: ---> 0.74 <--- |')
     print('|                                                                           |')
     print('|        ***************************                                 @@     |')
     print('|        ** MANIPULATE TLSD FILES **                                 @@     |')
@@ -199,18 +216,25 @@ def intro():
     print()
     print('*** the Trio+ tool - giveabit@mail.ru ***')
     print('')
+    if mode == 'c':
+        print('MODE: CREATE A NEW .tlsd FILE')
+    if mode == 'm':
+        print('MODE: MODIFY A SINGLE .tlsd FILE')
     time.sleep(0.5)
 def choose_mode():
-    answer = ask('[e]xtract audio or [m]anipulate file?', mode, ['e', 'm'], 5)
+    answer = ask('[e]xtract audio \n[m]anipulate single file or \n[c]reate new file from existing parts\n\nWhat shall we do?', mode, ['e', 'm', 'c'], 5)
     return answer
 def init():
-    print('\nWelcome!\n')
+    print('\nWelcome to the Trio+ tool!\n')
+    print('You can either extract recorded guitar tracks (extract Audio),')
+    print('re-arrange the parts within one file (manipulate single file),')
+    print('or you can build a new .tlsd file from parts of other existing .tlsd files (create new)\n')
     read_ini()
     if debug:
         if not os.path.isdir(debugDir):
             os.makedirs(debugDir)
     fileList = []
-    if len(sys.argv) == 2 and sys.argv[1][-5:] == '.tlsd':
+    if len(sys.argv) == 2 and sys.argv[1][-5:] == '.tlsd': # file given with drag&drop
         try:
             file = os.path.basename(os.path.normpath(sys.argv[1]))
             fileList.append(file)
@@ -228,15 +252,21 @@ def init():
         return fileList, debug, mode
     else:
         mode = choose_mode()
-        if mode == 'm':
+        if mode == 'm': # manipulate single file
+            print('\n'*100)
+            print('\nModify an existing .tlsd file. You can copy, move and erase parts.')
+            print('Please choose a .tlsd file to edit!\n')
             file = fileDialog()
             while not file:
                 print('\n'*100)
-                intro()
-                print('\ninput error - try again!\n')
+                intro('m')
+                print('\nYoda says:\nFailed in your attempt to outsmart me you have!\n')
+                print('-> choose a valid file number!\n')
                 file = fileDialog()
             fileList.append(file)
-        else:
+        elif mode == 'c':  # create a new .tlsd with parts from other .tlsd files
+            fileList = []
+        else:  # extract audio
             if tlsd_dir:
                 fileList = glob(tlsd_dir+'/*' + trioFileExtension)
             else:
@@ -249,7 +279,6 @@ def init():
                 os.mkdir(wavDir)
     return fileList, debug, mode
 def read_ini():
-    rsc_file = rsc+'program_defaults.ini'
     if os.path.isfile(rsc_file):
         config = []
         global debug
@@ -270,8 +299,10 @@ def read_ini():
 
         if config[1] == 'e':
             mode = 'e'
-        else:
+        elif config[1] == 'm':
             mode = 'm'
+        elif config[1] == 'c':
+            mode = 'c'
 
         if config[2]:
             if os.path.isdir(config[2]):
@@ -471,7 +502,7 @@ def presentParts(parts):
     print('=' * len(parts) * 10+'=')
 
 # ~~~~~~~~~~~~~~~~~ AUDIO FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~
-def XXXformAudioParts(parts, data, debugFile):
+def XXXformAudioParts(parts, data, debugFile): #OLD CODE JUST FOR REFERENCE - NOT IN USE !!!
     # DEBUG
     if debug:
         with open(debugFile,'a') as f:
@@ -692,10 +723,16 @@ def verifyZeroBlock(buffer):
         return True
     else:
         return False
-def give_parts_with_audio_only(parts):
+def give_parts_with_audio_only(parts): #left in place but NOT USED since move/copy request: 'should also work for trained parts'
     new = []
     for part in parts:
         if part.has_audio():
+            new.append(part)
+    return new
+def give_trained_parts_only(parts): #REPLACES: 'give_parts_with_audio_only' since move/copy request: 'should also work for trained parts'
+    new = []
+    for part in parts:
+        if part.get_trained():
             new.append(part)
     return new
 def give_not_trained_parts(parts):
@@ -744,21 +781,23 @@ def choose_operation(file_name, parts, data):
 
 def tlsd_manipulation_user_input(parts, mode):
     # lots of user input and checks
-    valid_source_parts = give_parts_with_audio_only(parts)
+    valid_source_parts = give_trained_parts_only(parts)
     valid_destiantion_parts = give_not_trained_parts(parts)
     if not valid_source_parts:
         if mode == 'c':
-            print('\nsorry - no audio parts to copy!')
+            print('\nsorry - no trained or audio parts to copy!')
         if mode == 'm':
-            print('\nsorry - no audio parts to move!')
+            print('\nsorry - no trained or audio parts to move!')
         if mode == 'e':
-            print('\nsorry - no audio parts to erase!')
+            print('\nsorry - no trained or audio parts to erase!')
         return 0, 0
     if not valid_destiantion_parts and mode in ['c', 'm']:
         if mode == 'c':
             print('\nsorry - no non-trained (totally empty) parts as copy destination available!')
+            print('You may need to erase one first.')
         if mode == 'm':
             print('\nsorry - no non-trained (totally empty) parts as move destination available!')
+            print('You may need to erase one first.')
         return 0, 0
     valid_source_numbers = []
     for part in valid_source_parts:
@@ -913,12 +952,15 @@ def erase_part(outfile_name, parts, data, source):
     header[write_address:write_address+lenght] = insert_value
 
     # CHANGE HEADER BYTES - EXTENDED PART INFOS
+    # >>> TO DO: check if needed to write 'empty'
+    # to theses parts
+    # in case: set up 'empty' bytes for write
 
-    start = dict_ext_part_infos[source]
-    lenght = 16384
-    insert_value = empty_ext_part_bytes
-    write_address = start
-    header[write_address:write_address+lenght] = insert_value
+    # start = dict_ext_part_infos[source]
+    # lenght = ...
+    # insert_value = empty_EXTENDED_part_bytes
+    # write_address = start
+    # header[write_address:write_address+lenght] = insert_value
 
     # ACCOUNT FOR NEW FILE LENGHT IN HEADER
     # A) fixed values:
@@ -966,3 +1008,233 @@ def chunker(sequence, size):
 
 def upload_audio(parts, file, data):
     pass
+# ~~~~~~~~~~~~~~~~~ CREATE NEW .tlsd FUNCTIONS ~~~~~~~~~~~~~~
+def present_build_process(outfile_name, containers):    
+    """present the progress of the building process of the new .tlsd file"""
+    print('\n' * 100)
+    print('\n\nYour new file: ->'+outfile_name+'<- looks like this, at the moment:\n')
+    print('|'+'+' * 60+'|')
+    for i in range(5):
+        match = False
+        for j in range(5):
+            if containers[j].target_part_number == i + 1:
+                match = True
+                print('| PART', i + 1, ':\n| ->',
+                  containers[j].source_file, '|| part', containers[j].source_part)
+        if not match:
+            print('| PART', i + 1, ': -> E M P T Y <-')
+        print('|'+'+' * 60+'|')
+    print('')
+
+
+def build_new_file(outfile_name, containers, new_data):
+    """
+    form a new .tlsd file in memory based on the empty template file
+    where 'containers' (list 0...4 of container objects) hold the raw data
+    and 'new_data' contains the empty template file (binary data)
+    """
+
+    # delete non populated containers
+    temp = []
+    for container in containers:
+        if container.target_part_number:
+            temp.append(container)
+    containers = temp
+
+    # sort 'em
+    containers.sort(key=lambda x: x.target_part_number)
+
+    new_data = bytearray(new_data)
+    new_filesize = offsetAudio
+    for current_part_number in range(1,6):
+        part_lenght = 0        
+        match = []
+
+        match = [x for x in containers if x.target_part_number == current_part_number]
+        if match:
+            match = match[0]
+            new_data.extend(match.audio_area_data)
+            new_filesize += len(match.audio_area_data)
+            part_lenght = len(match.audio_area_data)
+            # Extended part infos
+            ext_part_info = match.ext_part_info
+            write_address = dict_ext_part_infos[current_part_number]
+            lenght = 16384 # bytes
+            new_data[write_address:write_address+lenght] = ext_part_info
+
+            # Part infos
+            part_info = match.part_info
+            write_address = dict_part_infos[current_part_number]
+            lenght = 20 # bytes
+            new_data[write_address:write_address+lenght] = part_info
+
+        # Filesize parts 1...4
+        if not current_part_number == 5:
+            write_address = dict_part_eof_dword[current_part_number]
+            insert_value = (new_filesize-1192).to_bytes(4, 'little')
+            new_data[write_address:write_address+4] = insert_value
+
+        # Part lenghts
+        write_address = dict_part_endings_dword[current_part_number]
+        insert_value = (part_lenght).to_bytes(4, 'little')
+        new_data[write_address:write_address+4] = insert_value
+
+        # EOFs
+        first = True
+        for write_address in fixed_value_eof_locations:
+            if first:
+                first = False
+                insert_value = new_filesize.to_bytes(4, 'little')
+                new_data[write_address:write_address + 4] = insert_value
+            else:
+                insert_value = (new_filesize - 1192).to_bytes(4, 'little')
+                new_data[write_address:write_address + 4] = insert_value
+        
+        # Filename
+        name = outfile_name.split('.')[0]
+        new_data[1332:1340] = (0).to_bytes(8, 'little') # delete the 8-char word 'Template'
+        lenght = len(name)
+        new_data[1332:1332+lenght] = bytearray(name.encode())
+
+
+    with open(outfile_name, 'wb') as f:
+        f.write(new_data)
+ 
+    return()
+
+def read_empty_template():
+    """read the empty template file to memory or abort script"""
+    try:
+        # will contain the empty .tlsd file template
+        new_data = readBytes(rsc_empty_song, 0)
+        return(new_data)
+    except:
+        print('\n' * 100)
+        print('Oops! Expected the file:\n-> ' + rsc_empty_song +
+              '\n...but could not locate it!')
+        print('\nPlease download the latest release version of this script from GitHub, extract all files and try again.\n')
+        input('<ok> - EXIT')
+        sys.exit(-999)
+
+def filename_for_new_file():
+    """
+    returns a max. 16 char alphanum/space filename with at least 1 alnum char
+    checks if file exists and if so starts over
+    """
+    print('\nFirst we need a filename to write the new data.')
+    outfile_name = ''
+    while not outfile_name:
+        outfile_name = input(
+            '\nPlease enter a filename\n(max. 16 alphanumeric characters with no file extension): ')
+        if len(outfile_name) < 17 and len(outfile_name) > 0:
+            if all(x.isalnum() or x.isspace() for x in outfile_name):
+                if not any(x.isalnum() for x in outfile_name):
+                    print("\n-> Please input at least one alpabetical letter.\n")
+                    outfile_name = ''
+            else:
+                print("\n-> Please input only alphabetical letters and spaces.\n")
+                outfile_name = ''
+        else:
+            print("\n-> Please input at least 1 and up to 16 characters.\n")
+            outfile_name = ''
+        if outfile_name:
+            outfile_name += '.tlsd'
+            if os.path.isfile(outfile_name):
+                input('Sorry, but ->'+outfile_name+'<- already exists. Please choose another name. <OK>')
+                outfile_name=''
+    return(outfile_name)
+
+def choose_sources_and_destinations():
+    new_data = read_empty_template()
+    # also inital check to prevent critical error (if missing)
+    # happening late in the editing
+
+    finish = 0
+    source_part_counter = 0
+    valid_destination_numbers = [1, 2, 3, 4, 5]
+    containers = [PartCopyContainer() for i in range(5)]
+    outfile_name = filename_for_new_file()
+    
+    print('\n-> OK, your new file will be created as:', outfile_name)
+
+    while not finish:
+        print('\n\nSOURCES - select a .tlsd file\n')
+        source_file = fileDialog()
+        while not source_file:
+            print('\n'*100)
+            intro('c')
+            print('\nYoda says:\nFailed in your attempt to outsmart me you have!\n')
+            print('-> choose a valid file number!\n')
+            print('\n\nSOURCES - select a .tlsd file\n')
+            source_file = fileDialog()
+        data = readBytes(source_file, 0)
+        parts = getPartInfo(data, None)
+        if not parts:
+            print('\nthere are no parts. Please choose another file')
+            input('<return>')
+        else:        
+            print('\nSOURCE file:',source_file)
+            print('Now select a part you want to copy to the new file:')
+            valid_source_parts = give_trained_parts_only(parts)
+            valid_source_numbers = []
+            if valid_source_parts:
+                for part in valid_source_parts:
+                    valid_source_numbers.append(part.get_part_number())
+                presentParts(valid_source_parts)
+                source = ask('source: which part number shall be copied? ', '', valid_source_numbers, 6)
+
+                # ... copy data from source file into container ...
+                # A) audio area
+                start, end = parts[source-1].get_reserved_audio_space()
+                # parts = list from 0...4 <-> part numbers = 1...5
+                audio_area_data = data[start:end]
+               
+                # B) part infos
+                start = dict_part_infos[source]
+                end = start + 20 # bytes / 5 DWORD values
+                part_info = data[start:end]
+                
+                # C) further/extended part infos
+                start = dict_ext_part_infos[source]
+                end = start + 16384 # bytes
+                ext_part_info = data[start:end]
+                
+                # D) populate object
+                containers[source_part_counter].audio_area_data = audio_area_data
+                containers[source_part_counter].part_info = part_info
+                containers[source_part_counter].ext_part_info = ext_part_info
+                containers[source_part_counter].source_file = source_file
+                containers[source_part_counter].source_part = source
+
+
+
+                present_build_process(outfile_name, containers)
+                destination = ask('Destination part number: Coose an EMPTY part to place the source. ', '', valid_destination_numbers, 6)
+                
+                containers[source_part_counter].target_part_number = destination
+                present_build_process(outfile_name, containers)
+                
+                # don't forget to increase counter            
+                source_part_counter += 1
+                # ...and update valid destinations
+                valid_destination_numbers.remove(destination)
+
+                
+                
+            else:
+                print('\nsorry - no trained or audio parts in this file!')
+
+            print('\nYou have selected',source_part_counter,' parts to copy into your file.')
+            if source_part_counter < 5:
+                answer = ask('Do you wish to add more parts?','yes')
+                if not answer:
+                    finish = True
+                    print('\nWell then - let\'s create the new file...')
+            else:
+                print('\nAll 5 parts are full - will now create the new file...')
+                finish = True
+    build_new_file(outfile_name, containers, new_data)
+        
+
+
+
