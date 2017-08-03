@@ -20,9 +20,10 @@ def modify_tlsd(fileList, debug):
     print('trained\t= chord progression trained but no audio recorded')
     print('yes\t= audio has been recorded')
     print('overdub\t= additional audio overdub(s) have been recorded')
-    print('\n\t\t\t[x] read song data.')
     fileName = fileList[0]
     while fileName:
+        print('\nFile to edit:', fileName)
+        print('\n\t\t\t[x] read song data.')
         data = readBytes(fileName, 0)
         if debug:
             debugFile = debug_basic_tasks(data, fileName)
@@ -102,12 +103,29 @@ def write_wave_files(fileName, audioBlocks):
         foo += 1
     return
 
+
+def create_tlsd():
+    print('\n'*100)
+    print('Create a new .tlsd file from existing parts!\n\n')
+    print('This will create a new .tlsd file that consists of parts')
+    print('from other .tlsd files. You will be able to select up to 5 parts')
+    print('from different source .tlsd files and put them in any order into')
+    print('the newly created .tlsd file.\n')
+    print('Note: This part of the software is considered to be BETA. Results may')        
+    print('not be satisfying.\n')
+    choose_sources_and_destinations()
+    print('\nthat\'s it. EXIT')
+    input('<return>')
+    sys.exit(0)
+
 def main():
     intro()
     fileList, debug, mode = init()
-    if mode == 'm':
+    if mode == 'm': # manipulate single file
         modify_tlsd(fileList, debug)
-    else:
+    if mode == 'c': # create new .tlsd from parts of other .tlsd files
+        create_tlsd()
+    else: # exctract audio
         extract_audio(fileList, debug)
 
 if __name__ == '__main__':
