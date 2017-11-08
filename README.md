@@ -42,7 +42,7 @@ see: http://digitech.com/en/products/trio-plus
 good to work with; always get latest release!
 
 <br>03 Working:<br>
-extract audio; copy, move and erase parts.<br>
+extract audio; copy, move and erase parts; build new .tlsd file from parts of other .tlsd files (i.e. song creation of parts from different songs).<br>
 
 <br>04 Not working:<br>
 upload audio to part;<br>
