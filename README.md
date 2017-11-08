@@ -13,7 +13,11 @@ CONTENTS:<br>
 06 Going further<br>
 
 <br>00 miniblog:<br>
-<b>2017-08-03</b><br>
+<b>2017-11-08</b><br>
+There still seems to be interest in the project. Just received an email asking if there was progress on the 'upload audio' feature. Have had no time for coding the past months but will take this as an incentive to re-start working on this. So hang on please ;-)<br>
+Cheers!<br><br>
+
+2017-08-03<br>
 Version 0.74 has been released today. I was requested to add a feature (song creation of parts from different songs). Done. Also made the UI a little nicer. Enabled copy/move of 'trained only' parts.<br>... Ahhh and added some 'Yoda says...' messages if user input is incorrect ;-)<br>
 Cheers!<br><br>
 2017-05-24<br>
@@ -25,9 +29,6 @@ Cheers!<br><br>
 2017-03-13<br>
 New release - bugfixes. I hate bugs ;-). We're still beta with the editing functions!
 Cheers!<br>
-<br>2017-03-12<br>
-New Release - check it out.
-Cheers!
 
 <br>01 TLDR:<br>
 * Ultimate goal is to extract audio and midi data from the Digitech Trio Plus pedal's SD card for further use in your preferred DAW.
