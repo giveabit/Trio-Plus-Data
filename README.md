@@ -13,7 +13,11 @@ CONTENTS:<br>
 06 Going further<br>
 
 <br>00 miniblog:<br>
-<b>2017-11-08</b><br>
+<b>2017-11-27</b><br>
+Been working on 'upload audio' feature. Was looking into ways to make a preview of the results since you might want to adjust the level of the uploaded audio to match the recorded guitar level within the song. There is the 'pyaudio' module which looks suitable. This implies that the user would have to install this module on their platform. At the moment I am able to test a guided install of pyaudio on Linux and Windows. From a bit of google search it looks as MacOs might be a bit troublesome. I cannot run tests on MacOs. However I will implement the 'upload' feature in a way that even without pyaudio the user will be able to use the feature - but then without previewing the results. So this might then be a bit trial and error to match the audio levels. As for now, the audio from the song will be read to memory and the mixing/preview is coded. I will now have to write the code to patch the mixed audio back in the .tlsd file and do a bit of testing. Also the implementation of the guided pyaudio installation is heavy time consuming but it will be an important part of the overall function so I feel this need to be done. As an experienced python user you might think it was easy as 'pip -install pyaudio' but this holds true only for windows. I was also experimenting with 'pyinstaller' to release a native Linux/Windows executable. Looks promising. This would of course be a more hassle-free approach since it would bundle the dependency on pyaudio. However you cannot cross-compile with pyinstaller thus no luck for a MacOs executable. Maybe a memeber of the community could provide a MacOs compiled version once the new release is out. As for now be patient and<br>
+Cheers!<br><br>
+
+2017-11-08<br>
 There still seems to be interest in the project. Just received an email asking if there was progress on the 'upload audio' feature. Have had no time for coding the past months but will take this as an incentive to re-start working on this. So hang on please ;-)<br>
 Cheers!<br><br>
 
