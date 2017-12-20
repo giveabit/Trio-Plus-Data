@@ -1,6 +1,4 @@
 
-def main():
-    pass
 
 if __name__ == '__main__':
     main()
@@ -13,6 +11,7 @@ import sys
 import os
 from resource_files.mod_interactive_input import ask
 from glob import glob
+import itertools
 
 # GLOBALS
 offsetAudio = 138032  # bytes
@@ -86,7 +85,8 @@ class PartCopyContainer(object):
         self.source_part = source_part
 
 class Part(object):
-    # all values are False or integer !!!
+    # all values are False or integer except time_lenght is float !!!
+    # would need re-writing since python does not use getter/setter style!!!
     id_counter = 0
 
     def reset_counter():
@@ -96,7 +96,7 @@ class Part(object):
     def __init__(self, trained=False, start_audio=False,
                  end_audio=False, start_overdub=False,
                  end_overdub=False, start_reserved=False,
-                 end_reserved=False):
+                 end_reserved=False, byte_lenght=0, time_lenght=0):
         Part.id_counter += 1
         self.__Part_number = self.id_counter
         self.__Trained = trained
@@ -106,6 +106,8 @@ class Part(object):
         self.__End_overdub = end_overdub
         self.__Start_reserved = start_reserved
         self.__End_reserved = end_reserved
+        self.byte_lenght = byte_lenght
+        self.time_lenght = time_lenght
 
     def __str__(self):
         try:
@@ -191,10 +193,9 @@ class Part(object):
         bytelenght = self.__End_reserved - self.__Start_reserved
         return bytelenght
 
-
 def intro(mode=''):
     print('-----------------------------------------------------------------------------')
-    print('|                                                 release-#: ---> 0.74 <--- |')
+    print('|                                                 release-#: ---> 0.75 <--- |')
     print('|                                                                           |')
     print('|        ***************************                                 @@     |')
     print('|        ** MANIPULATE TLSD FILES **                                 @@     |')
@@ -220,15 +221,22 @@ def intro(mode=''):
         print('MODE: CREATE A NEW .tlsd FILE')
     if mode == 'm':
         print('MODE: MODIFY A SINGLE .tlsd FILE')
-    time.sleep(0.5)
+    if mode == 'u':
+        print('MODE: UPLOAD AUDIO')
+    time.sleep(1)
 def choose_mode():
-    answer = ask('[e]xtract audio \n[m]anipulate single file or \n[c]reate new file from existing parts\n\nWhat shall we do?', mode, ['e', 'm', 'c'], 5)
+    answer = ask('[e]xtract audio \n[m]anipulate single file\n\
+[c]reate new file from existing parts\n\
+[u]pload .wav-audio to a part\n\
+[s]how info\n\nWhat shall we do?', mode, ['e', 'm', 'c', 'u', 's'], 5)
     return answer
 def init():
     print('\nWelcome to the Trio+ tool!\n')
-    print('You can either extract recorded guitar tracks (extract Audio),')
-    print('re-arrange the parts within one file (manipulate single file),')
-    print('or you can build a new .tlsd file from parts of other existing .tlsd files (create new)\n')
+    print('You can either\n - extract recorded guitar tracks (extract Audio),')
+    print(' - re-arrange the parts within one file (manipulate single file),')
+    print(' - build a new .tlsd file from parts of other existing .tlsd files (create new)')
+    print(' - upload .wav-audio to a trained/recorded/overdubbed part (upload)')
+    print(' - show info on the parts within .tlsd files (show info)\n')
     read_ini()
     if debug:
         if not os.path.isdir(debugDir):
@@ -266,7 +274,20 @@ def init():
             fileList.append(file)
         elif mode == 'c':  # create a new .tlsd with parts from other .tlsd files
             fileList = []
-        else:  # extract audio
+        elif mode == 'u': # upload audio to part
+            print('\n'*100)
+            print('\nUpload audio to a trained/recorded/overdubbed part.')
+            print('Please choose a .tlsd file to edit!\n')
+            file = fileDialog()
+            while not file:
+                print('\n'*100)
+                intro('u')
+                print('\nYoda says:\nFailed in your attempt to outsmart me you have!\n')
+                print('-> choose a valid file number!\n')
+                file = fileDialog()
+            fileList.append(file)
+            
+        else:  # extract audio or show .tlsd info (hidden function)
             if tlsd_dir:
                 fileList = glob(tlsd_dir+'/*' + trioFileExtension)
             else:
@@ -284,6 +305,7 @@ def read_ini():
         global debug
         global mode
         global tlsd_dir
+        global makeup_gain
         with open(rsc_file, 'r') as f:
             temp = f.readlines()
             temp = temp[3:]
@@ -303,6 +325,10 @@ def read_ini():
             mode = 'm'
         elif config[1] == 'c':
             mode = 'c'
+        elif config[1] == 'u':
+            mode = 'u'
+        elif config[1] == 's':
+            mode = 's'
 
         if config[2]:
             if os.path.isdir(config[2]):
@@ -311,12 +337,19 @@ def read_ini():
                 tlsd_dir = ''
         else:
             tlsd_dir = ''
-        # print(debug, mode, tlsd_dir)
+
+        if config[3] == '1':
+            makeup_gain = True
+        else:
+            makeup_gain = False
+        #print('dbg:',debug, 'mode', mode, 'dir:', tlsd_dir, 'gain:', makeup_gain, config[3])
+        #input()
     else:
         print('no config found - ignoring!')
         debug = True
         mode = 'e'
         tlsd_dir = ''
+        makeup_gain = True
         return 0
     return
 def fileDialog(mode='trio'):
@@ -342,13 +375,14 @@ def fileDialog(mode='trio'):
         files.sort(key=lambda f: os.path.splitext(f)[1])
         for index, file in enumerate(files):
             print(index, '-', file)
-        file_number = input('\n\nPlease input file number for processing: ')
-        try:
-            file_number = int(file_number)
-        except:
-            return 0
-        if not file_number < len(files):
-            return 0
+        # file_number = input('\n\nPlease input file number for processing: ') - REMOVE
+        file_number = ask('\n\nPlease input file number for processing: ', 0, list(range(len(files))), 6)
+        # try: - REMOVE BLOCK!
+        #     file_number = int(file_number)
+        # except:
+        #     return 0
+        # if not file_number < len(files):
+        #     return 0
         return files[file_number]
     if mode == 'trio':
         print('There are no '+trioFileExtension+' files in this folder')
@@ -413,6 +447,10 @@ def getPartInfo(data, debugFile=''):
                 part.set_audio(start, end)
             previous = end
 
+            start, end = part.get_reserved_audio_space()
+            part.byte_lenght = end-start
+            part.time_lenght = round(part.byte_lenght/88200/2,1) # 88200 bytes per second with 16 bit/44,1 kHz ; /2 -> 2 audio's interleaved
+
     # *************************
     # if debug  and debugFile:
     #     with open(debugFile, 'a') as f:
@@ -465,11 +503,11 @@ def getPartInfo(data, debugFile=''):
             part.set_overdub(start, end)
 
     # *************************
-    if debug and debugFile:
-        with open(debugFile, 'a') as f:
-            f.write('\nafter verify end\n')
-            for part in parts:
-                f.write(str(part)+'\n')
+    # if debug and debugFile:
+    #     with open(debugFile, 'a') as f:
+    #         f.write('\nafter verify end\n')
+    #         for part in parts:
+    #             f.write(str(part)+'\n')
 
     return parts
 def exportTrioHeader(data, fileName):
@@ -499,10 +537,21 @@ def presentParts(parts):
             outstring += '  empty  '
         outstring += '|'
     print(outstring)
+    outstring='|'
+    for part in parts:
+        temp_str = str(part.time_lenght) + ' s'
+        temp_lenght = len(temp_str)
+        num_spaces = 9-temp_lenght
+        if num_spaces % 2 == 0:
+            outstring += ' ' * (int(num_spaces/2)) + temp_str + ' ' * (int(num_spaces/2))
+        else:
+            outstring += ' ' * (int(num_spaces/2) +1) + temp_str + ' ' * (int(num_spaces/2))
+        outstring += '|'
+    print(outstring)
     print('=' * len(parts) * 10+'=')
 
 # ~~~~~~~~~~~~~~~~~ AUDIO FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~
-def XXXformAudioParts(parts, data, debugFile): #OLD CODE JUST FOR REFERENCE - NOT IN USE !!!
+def old_A_XXXformAudioParts(parts, data, debugFile): #OLD CODE JUST FOR REFERENCE - NOT IN USE !!!
     # DEBUG
     if debug:
         with open(debugFile,'a') as f:
@@ -545,48 +594,10 @@ def XXXformAudioParts(parts, data, debugFile): #OLD CODE JUST FOR REFERENCE - NO
         audioParts.append(temp)
     return audioParts
 
-def write_debug_audioparts(debugFile, dgb_au, dbg_od=[]):
-    with open(debugFile, 'a') as f:
-        f.write('-' * 80 + '\n')
-    previous_end = 0
-    for foo, item in enumerate(dgb_au):
-        start, end = item
-        foo += 1
-        if start - previous_end > 2* chunkSize:
-            with open(debugFile, 'a') as f:
-                f.write('au ' + str(foo) + ': ' + str(start) + ' - ' + str(end) + '\t\t\tlenght: ' +
-                        str(end - start) + '\n')
-        else:
-            with open(debugFile, 'a') as f:
-                f.write('au ' + str(foo) + ': ' + str(start) + ' - ' + str(end) + '\t\t\tlenght: ' +
-                        str(end - start) + ' -\tdistance: ' + str(start - previous_end) + '\n')
-                if (start - previous_end) < chunkSize:
-                    f.write('\t\t\t!!!\tWARNING: DISTANCE LENGHT TOO SHORT\t!!!')
-        previous_end = end
-
-    previous_end = 0
-    if dbg_od:
-        for foo, item in enumerate(dbg_od):
-            start, end = item
-            foo += 1
-            if start - previous_end > 2* chunkSize:
-                with open(debugFile, 'a') as f:
-                    f.write('od ' + str(foo) + ': ' + str(start) + ' - ' +
-                            str(end) + '\t\t\tlenght: ' + str(end - start) + '\n')
-            else:
-                with open(debugFile, 'a') as f:
-                    f.write('od ' + str(foo) + ': ' + str(start) + ' - ' + str(end) +
-                            '\t\t\tlenght: ' + str(end - start) + ' -\tdistance: ' +
-                            str(start - previous_end) + '\n')
-                    if (start - previous_end) < chunkSize:
-                        f.write('\t\t\t!!!\tWARNING: DISTANCE LENGHT TOO SHORT\t!!!')
-            previous_end = end
-        with open(debugFile, 'a') as f:
-            f.write('-' * 80 + '\n')
-    return
-
-def formAudioParts(parts, data, debugFile):
+def old_B_xxxformAudioParts(parts, data, debugFile):  #OLD CODE JUST FOR REFERENCE - NOT IN USE !!!
     # DEBUG
+    if not debugFile:
+        debug = False # THIS OVERRIDE IS UGLY - whole debug system needs re-writing!
     if debug:
         with open(debugFile, 'a') as f:
             f.write('\nAUDIO PARTS:\n')
@@ -671,6 +682,82 @@ def formAudioParts(parts, data, debugFile):
             # END
     return audioParts
 
+def formAudioParts(parts, data, return_both = False):
+    '''
+    return a list containing at least the audio-section of the given parts
+    in case of overdub also return these
+    in case that audio-section was empty return zerobytes
+    '''
+    audios_container = []
+    for part in parts:
+        start, end = part.get_reserved_audio_space()
+        all_chunks = chunker(data[start:end], chunkSize)
+        overdub_chunks = []
+        audio_chunks = []
+        position = start
+        for count, item in enumerate(all_chunks):
+            position += len(item)
+            if len(item) == chunkSize:
+                if count % 2 == 0:
+                    overdub_chunks.append(item)
+                else:
+                    audio_chunks.append(item)
+            else:
+                if position == end:
+                    if count % 2 == 0:
+                        overdub_chunks.append(item)
+                    else:
+                        audio_chunks.append(item)
+                else:
+                    input('WARNING: possible audio chunk has been dropped. <enter>')
+
+        audios_container.append(audio_chunks)
+        if part.has_overdub() or return_both:
+            audios_container.append(overdub_chunks)
+
+    return audios_container
+
+def write_debug_audioparts(debugFile, dgb_au, dbg_od=[]):
+    with open(debugFile, 'a') as f:
+        f.write('-' * 80 + '\n')
+    previous_end = 0
+    for foo, item in enumerate(dgb_au):
+        start, end = item
+        foo += 1
+        if start - previous_end > 2* chunkSize:
+            with open(debugFile, 'a') as f:
+                f.write('au ' + str(foo) + ': ' + str(start) + ' - ' + str(end) + '\t\t\tlenght: ' +
+                        str(end - start) + '\n')
+        else:
+            with open(debugFile, 'a') as f:
+                f.write('au ' + str(foo) + ': ' + str(start) + ' - ' + str(end) + '\t\t\tlenght: ' +
+                        str(end - start) + ' -\tdistance: ' + str(start - previous_end) + '\n')
+                if (start - previous_end) < chunkSize:
+                    f.write('\t\t\t!!!\tWARNING: DISTANCE LENGHT TOO SHORT\t!!!')
+        previous_end = end
+
+    previous_end = 0
+    if dbg_od:
+        for foo, item in enumerate(dbg_od):
+            start, end = item
+            foo += 1
+            if start - previous_end > 2* chunkSize:
+                with open(debugFile, 'a') as f:
+                    f.write('od ' + str(foo) + ': ' + str(start) + ' - ' +
+                            str(end) + '\t\t\tlenght: ' + str(end - start) + '\n')
+            else:
+                with open(debugFile, 'a') as f:
+                    f.write('od ' + str(foo) + ': ' + str(start) + ' - ' + str(end) +
+                            '\t\t\tlenght: ' + str(end - start) + ' -\tdistance: ' +
+                            str(start - previous_end) + '\n')
+                    if (start - previous_end) < chunkSize:
+                        f.write('\t\t\t!!!\tWARNING: DISTANCE LENGHT TOO SHORT\t!!!')
+            previous_end = end
+        with open(debugFile, 'a') as f:
+            f.write('-' * 80 + '\n')
+    return
+
+
 def writeHeader(sizeAudio):
     data = []
     # byte number x...y
@@ -723,13 +810,13 @@ def verifyZeroBlock(buffer):
         return True
     else:
         return False
-def give_parts_with_audio_only(parts): #left in place but NOT USED since move/copy request: 'should also work for trained parts'
+def give_parts_with_audio_only(parts):
     new = []
     for part in parts:
         if part.has_audio():
             new.append(part)
     return new
-def give_trained_parts_only(parts): #REPLACES: 'give_parts_with_audio_only' since move/copy request: 'should also work for trained parts'
+def give_trained_parts_only(parts):
     new = []
     for part in parts:
         if part.get_trained():
@@ -998,16 +1085,6 @@ def erase_part(outfile_name, parts, data, source):
         outFile(outfile_name, item)
     return 1
 
-def chunker(sequence, size):
-    """Return the given SEQUENCE as a list of
-    chunks with the defined SIZE.
-
-    The last chunk may be smaller than SIZE.
-    """
-    return [sequence[pos:pos + size] for pos in range(0, len(sequence), size)]
-
-def upload_audio(parts, file, data):
-    pass
 # ~~~~~~~~~~~~~~~~~ CREATE NEW .tlsd FUNCTIONS ~~~~~~~~~~~~~~
 def present_build_process(outfile_name, containers):    
     """present the progress of the building process of the new .tlsd file"""
@@ -1234,7 +1311,204 @@ def choose_sources_and_destinations():
                 print('\nAll 5 parts are full - will now create the new file...')
                 finish = True
     build_new_file(outfile_name, containers, new_data)
+
+# ~~~~~~~~~~~~~~~~~ UPLOAD AUDIO FUNCTIONS ~~~~~~~~~~~~~~
+
+def handle_pyaudio_install():
+    platform = sys.platform
+    if platform == 'win32' or platform == 'win64':
+        # windows
+        command = 'python -m pip install pyaudio'
         
+    elif platform == 'linux':
+        # linux
+        command = 'sudo apt-get install python3-pyaudio'
+        
+    elif platform == 'darwin':
+        # macos x
+        print('It seems you are running MacOS')
+        print('You will have to install PyAudio manually')
+        print('Please refer to:')
+        print('https://stackoverflow.com/questions/33851379/pyaudio-installation-on-mac-python-3')
+        input('OK <enter>')
+        command = ''
 
+    else:
+        # FAIL
+        command = ''
+        print('OS could not be idientified - please install PyAudio manually.')
+        input('Sorry! <enter>')
 
+    if command:
+        print('OS idientified as', platform)
+        print('\nattempting package installation!')
+        input('OK <enter>')
+        os.system(command)
 
+def try_pyaudio_import():
+    global pyaudio
+    try:
+        import pyaudio ### !!!!!! ####
+        PYAUDIO = True
+    except ImportError:
+        print('\n\nWarning: \'PyAudio\' could not be imported!')
+        print('\nPyAudio is a python package that provides Bindings for PortAudio v19')
+        print('- the cross-platform audio input/output stream library.')
+        print('\nHere, it would provide a preview function if you wanted to upload')
+        print('audio data to an existing part - you really would want this!')
+        print('\nThe script will run without it but an install of PyAudio is recommended')
+        answer = ask('\nShall we attempt to do an automatic install (internet connection needs to be enabled)?','yes')
+        if not answer:
+            PYAUDIO = False
+            input('\nOK - we will contimue WITHOUT PyAudio <enter>')
+        else:
+            handle_pyaudio_install()
+            try:
+                import pyaudio ### !!!!!! ####
+                PYAUDIO = True
+                input('\n\nGreat! PyAudio has been installed and imported! <enter>')
+            except ImportError:
+                PYAUDIO = False
+                input('Sorry but something went wrong <enter>')
+    return PYAUDIO
+
+def read_wave(filename):
+    '''
+    read wave data from filename
+    return only the data part -> [44:]
+    '''
+    with open(filename, 'rb') as f:
+        wave_data = f.read()
+    return wave_data[44:]
+
+def chunker(sequence, size):
+    """Return the given SEQUENCE as a list of
+    chunks with the defined SIZE.
+
+    The last chunk may be smaller than SIZE.
+    """
+    return [sequence[pos:pos + size] for pos in range(0, len(sequence), size)]
+
+def generator_chunks(chunks):
+    '''
+    yields one chunk per call
+    '''
+    for item in chunks:
+        yield item
+
+def check_clip(value):
+    '''
+    check if audio signal is within limits.
+    if over max or under min value set to: max or min
+    '''
+    if value > 32767:
+        value = 32767
+    if value < -32768:
+        value = -32768
+    return value
+
+def mix_waves(wave_file, audio_from_tlsd, ratio_wave=50, operation='+', preview=False):
+    '''
+    add or substract two 16 bit signed wave data
+    return raw wave data (byte values) without header
+    mixing stops at end of shortest input file (zip), thus wave_file will be extended with nullbytes if needed
+    wave_file - must exist on HDD
+    audio_from_tlsd - in form of one single big chunk - no 32 k chunks here!
+    ratio_wave - how loud shall the wave data be mixed in
+    '''
+    ratio = ratio_wave
+    ratio_2 = 100 - ratio
+    ratio = ratio / 100
+    ratio_2 = ratio_2 / 100
+    if makeup_gain:
+        gain = 1.5
+        print('\n(Info): makeup gain will be applied - see: resource_files\program_defaults.ini\n')
+    else:
+        gain = 1.0
+        print('\n(Info): makeup gain will NOT be applied - see: resource_files\program_defaults.ini\n')
+
+    # lenght matching
+    wave = read_wave(wave_file)
+    lenght_wave = len(wave)
+    lenght_audio_tlsd = len(audio_from_tlsd)
+    if lenght_wave < lenght_audio_tlsd:
+        fill_zero = lenght_audio_tlsd - lenght_wave
+        print('(Info): filling wave file data up with',fill_zero,'zero-bytes.')
+        wave = bytearray(wave)
+        wave.extend(b'\x00' * fill_zero)
+    if lenght_wave > lenght_audio_tlsd:
+        too_much = lenght_wave - lenght_audio_tlsd
+        print('(Info): wave file is too big by',too_much,'bytes. Will be chopped.')
+
+    outline = 'prepairing...\r'
+    print(outline, end='', flush=True)
+
+    if preview:
+        chop = 882000 # 10 seconds
+        if lenght_audio_tlsd > chop:
+            audio_from_tlsd=audio_from_tlsd[:chop+1]
+        if lenght_wave > chop:
+            wave = wave[:chop+1]
+
+    # chunk raw data in 2 byte packs
+    wave_a = chunker(wave, 2)
+    wave_b = chunker(audio_from_tlsd, 2)
+    if len(wave_a) < len(wave_b):
+        lenght = len(wave_a)
+    else:
+        lenght = len (wave_b)
+    counter = 0
+    mix = []
+    outline = '                            \r'
+    print(outline, end='', flush=True)
+    for twobytes_a, twobytes_b in zip(wave_a, wave_b):
+        progress = int((counter/lenght)*100)
+        if progress % 10 == 0:
+            outline = 'mixing: '+str(progress)+' % \r'
+            print(outline, end='', flush=True)
+        # transform to signed integer
+        int_a = int.from_bytes(twobytes_a, 'little', signed=True)
+        int_b = int.from_bytes(twobytes_b, 'little', signed=True)
+        # do the mixing: + or -
+        if operation == '+':
+            append_value = int(round(((ratio * int_a + ratio_2 * int_b)*gain), 0))
+        else:
+            append_value = int(round(((ratio * int_a - ratio_2 * int_b)*gain), 0))
+        # just in case... avoid clipping
+        append_value = check_clip(append_value)
+        # re-transform to byte values
+        append_value = append_value.to_bytes(2, 'little', signed=True)
+        mix.append(append_value)
+        # and we're done!
+        counter +=1
+    outline = '                                      \r'
+    print(outline, end='', flush=True)
+    return mix
+
+def preview_mix(wave_data, seconds=10):
+    bytelenght = 88200 * seconds      
+    if len(wave_data) > bytelenght:
+        wave_data = wave_data[:bytelenght+1]
+    p = pyaudio.PyAudio()
+    stream = p.open(format=p.get_format_from_width(2),
+                    channels=1,
+                    rate=44100,
+                    output=True)
+    stream.write(wave_data)
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+def calculate_loudness(wave_data):
+    '''
+    calculate the loudness of wave data
+    '''
+    # chunk raw data in 2 byte packs
+    wave_data = chunker(wave_data, 2)
+    int_wave = []
+    for twobytes in wave_data:
+        # transform to signed integer
+        int_wave.append(int.from_bytes(twobytes, 'little', signed=True))
+    positives = [z for z in int_wave if z>0]    
+    sum_val = sum(positives)
+    return sum_val
