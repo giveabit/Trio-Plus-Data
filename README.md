@@ -14,7 +14,11 @@ CONTENTS:<br>
 06 Going further<br>
 
 <br><b>00 miniblog:</b><br>
-<b>2017-11-27</b><br>
+<b>2017-12-20</b><br>
+Ho ho ho - Christmas time is here and so I have uploaded the new release v0.75 of The Trio+ Tool. Now you can upload wave-audio to parts and show info on your .tlsd files. Info has been enhanced with part-duration in seconds. 'pyaudio' is required to enable upload-mix-preview. Will run without it but is much more convenient with pyaudio installed on your system. Automatic install of pyaudio has been tested under win and linux. Next up I will try to compile native binaries for win and linux ('.exe' files) with the help of 'pyinstaller'. Anybody out there willing to help with compiling for mac?!<br>Merry christmas and happy new year folks!<br>
+Cheers!<br><br>
+
+2017-11-27<br>
 Been working on 'upload audio' feature. Was looking into ways to make a preview of the results since you might want to adjust the level of the uploaded audio to match the recorded guitar level within the song. There is the 'pyaudio' module which looks suitable. This implies that the user would have to install this module on their platform. At the moment I am able to test a guided install of pyaudio on Linux and Windows. From a bit of google search it looks as MacOs might be a bit troublesome. I cannot run tests on MacOs. However I will implement the 'upload' feature in a way that even without pyaudio the user will be able to use the feature - but then without previewing the results. So this might then be a bit trial and error to match the audio levels. As for now, the audio from the song will be read to memory and the mixing/preview is coded. I will now have to write the code to patch the mixed audio back in the .tlsd file and do a bit of testing. Also the implementation of the guided pyaudio installation is heavy time consuming but it will be an important part of the overall function so I feel this need to be done. As an experienced python user you might think it was easy as 'pip -install pyaudio' but this holds true only for windows. I was also experimenting with 'pyinstaller' to release a native Linux/Windows executable. Looks promising. This would of course be a more hassle-free approach since it would bundle the dependency on pyaudio. However you cannot cross-compile with pyinstaller thus no luck for a MacOs executable. Maybe a memeber of the community could provide a MacOs compiled version once the new release is out. As for now be patient and<br>
 Cheers!<br><br>
 
@@ -30,9 +34,6 @@ Working on the 'upload audio' to a song functionality. Have not worked out how t
 Cheers!<br><br>
 2017-04-04<br>
 New release (0.73, recommended). Copy, erase, move parts implemented.<br>
-Cheers!<br><br>
-2017-03-13<br>
-New release - bugfixes. I hate bugs ;-). We're still beta with the editing functions!
 Cheers!<br>
 
 <br><b>01 TLDR:</b><br>
