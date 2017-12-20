@@ -15,7 +15,7 @@ CONTENTS:<br>
 
 <br><b>00 miniblog:</b><br>
 <b>2017-12-20</b><br>
-Ho ho ho - Christmas time is here and so I have uploaded the new release v0.75 of The Trio+ Tool. Now you can upload wave-audio to parts and show info on your .tlsd files. Info has been enhanced with part-duration in seconds. 'pyaudio' is required to enable upload-mix-preview. Will run without it but is much more convenient with pyaudio installed on your system. Automatic install of pyaudio has been tested under win and linux. Next up I will try to compile native binaries for win and linux ('.exe' files) with the help of 'pyinstaller'. Anybody out there willing to help with compiling for mac?!<br>Merry christmas and happy new year folks!<br>
+Ho ho ho - christmas time is here and so I have uploaded the new release v0.75 of The Trio+ Tool. Now you can upload wave-audio to parts and show info on your .tlsd files. Info has been enhanced with part-duration in seconds. 'pyaudio' is required to enable upload-mix-preview. Will run without it but is much more convenient with pyaudio installed on your system. Automatic install of pyaudio has been tested under win and linux. Next up I will try to compile native binaries for win and linux ('.exe' files) with the help of 'pyinstaller'. Anybody out there willing to help with compiling for mac?!<br>Merry christmas and happy new year folks!<br>
 Cheers!<br><br>
 
 2017-11-27<br>
