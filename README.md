@@ -1,5 +1,5 @@
 # Trio-Plus-Data
-current version: release 0.74 as of 2017-08-03<br>
+current version: release 0.75 as of 2017-12-21<br>
 <i> current development under 'Trio+Tool' branch</i><br>
 <i> updating the Trio+ hardware with 'TrioUpdaterInstaller_v2.0.2.exe' from Digitech website might be necessary</i><br>
 <i> this is a Python 3.x script - it will NOT run under Python 2.x </i>
