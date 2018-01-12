@@ -1,5 +1,5 @@
 # Trio-Plus-Data
-current version: release 0.75 as of 2017-12-21<br>
+current version: release 0.80 as of 2018-01-09<br>
 <i> current development under 'Trio+Tool' branch</i><br>
 <i> updating the Trio+ hardware with 'TrioUpdaterInstaller_v2.0.2.exe' from Digitech website might be necessary</i><br>
 <i> this is a Python 3.x script - it will NOT run under Python 2.x </i>
@@ -14,7 +14,11 @@ CONTENTS:<br>
 06 Going further<br>
 
 <br><b>00 miniblog:</b><br>
-<b>2017-12-20</b><br>
+<b>2018-01-09</b><br>
+Released version 0.80. This release features a graphical user interface (GUI) based on Tk (comes included with python). The release includes all source files as well as a windows binary (.exe). If you're on linux, you can compile a binary from source. I have added a readme on some issues with that. If I find the time and motivation, I will polish the linux version and release an updated source along with a binary. Since you will need windows anyway to generate the .tlsd files with the Trio Manager from Digitech, I thought a windows release will do for the moment.<br>I will be happy to fix bugs - if you find any - but consider the tool more or less feature complete. I don't think it will be possible the extract midi data from the .tlsd. I suppose these are generated 'on the fly' within the pedal. Nonetheless, there are some suspicious areas in the binary files that look somewhat like drum pattern. We'll see... As always: If you are interested, your help on reverse engineering the binary files would be more than welcome!<br>
+Cheers!<br><br>
+
+2017-12-20<<br>
 Ho ho ho - christmas time is here and so I have uploaded the new release v0.75 of The Trio+ Tool. Now you can upload wave-audio to parts and show info on your .tlsd files. Info has been enhanced with part-duration in seconds. 'pyaudio' is required to enable upload-mix-preview. Will run without it but is much more convenient with pyaudio installed on your system. Automatic install of pyaudio has been tested under win and linux. Next up I will try to compile native binaries for win and linux ('.exe' files) with the help of 'pyinstaller'. Anybody out there willing to help with compiling for mac?!<br>Merry christmas and happy new year folks!<br>
 Cheers!<br><br>
 
